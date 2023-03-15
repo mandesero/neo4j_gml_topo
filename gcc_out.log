@@ -1,0 +1,7 @@
+index, path
+0, (:Location {name: "A"})
+1, (:Location {name: "A"})-[:PATH_1 {cost: 50.0}]->(:Location {name: "B"})
+2, (:Location {name: "A"})-[:PATH_2 {cost: 50.0}]->(:Location {name: "C"})
+3, (:Location {name: "A"})-[:PATH_3 {cost: 50.0}]->(:Location {name: "B"})-[:PATH_3 {cost: 40.0}]->(:Location {name: "D"})
+4, (:Location {name: "A"})-[:PATH_4 {cost: 50.0}]->(:Location {name: "B"})-[:PATH_4 {cost: 40.0}]->(:Location {name: "D"})-[:PATH_4 {cost: 30.0}]->(:Location {name: "E"})
+5, (:Location {name: "A"})-[:PATH_5 {cost: 50.0}]->(:Location {name: "B"})-[:PATH_5 {cost: 40.0}]->(:Location {name: "D"})-[:PATH_5 {cost: 30.0}]->(:Location {name: "E"})-[:PATH_5 {cost: 40.0}]->(:Location {name: "F"})

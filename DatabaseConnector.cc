@@ -1,46 +1,65 @@
-#include <neo4j-client.h>
+#include <iostream>
+#include <string>
+#include <boost/process.hpp>
+#include <boost/iostreams/device/file_descriptor.hpp>
+#include <boost/iostreams/stream.hpp>
+#include <chrono>
+#include <vector>
 
-class DatabaseConnector {
+namespace bp = boost::process;
+
+class GDB_Topology {
 public:
-    DatabaseConnector(const char *uri, const char *username, const char *password) {
-        neo4j_client_init();
 
-        neo4j_config_t *config = neo4j_new_config();
-        neo4j_config_set_username(config, username);
-        neo4j_config_set_password(config, password);
-
-        connection = neo4j_connect(uri, config);
-        if (neo4j_connection_unrecoverable_error(connection)) {
-            neo4j_perror(stderr, errno, "Connection failed");
-            exit(EXIT_FAILURE);
-        }
-
-        neo4j_config_free(config);
+    GDB_Topology() {
+        bp::child cypher_shell("cypher-shell", bp::std_out > "gcc_out.log", bp::std_in < cypher_in);
     }
 
-    ~DatabaseConnector() {
-        neo4j_close(connection);
-        neo4j_client_cleanup();
+    void createSwitch(bp::opstream &in, int dpid) {
+        in << "CREATE (:Switch {dpid:" << dpid << "});";
     }
 
-    neo4j_connection_t *get_connection() const {
-        return connection;
+    void createLink(bp::opstream &in, int dpid_from, int dpid_to, int weight) {
+        in << "MATCH (from:Switch), (to:Switch) WHERE from.dpid = " << dpid_from << " and to.dpid = " << dpid_to << " CREATE (from)-[:Link {mb:" << weight << "}]->(to), (from)<-[:Link {mb:" << weight << "}]-(to);";
     }
 
+    void deleteSwitch(bp::opstream &in, int dpid) {
+        in << "MATCH (s: Switch) WHERE s.dpid = " << dpid << "DETACH DELETE s;";
+    }
+
+    void deleteLink(bp::opstream &in, int dpid_from, int dpid_to) {
+        in << "MATCH (from:Switch)-[r:Link]-(to:Switch) WHERE from.dpid = " << dpid_from << " and to.dpid = " << dpid_to << " delete r;";
+    }  
+    
 private:
-    neo4j_connection_t *connection;
-};
+    bp::opstream cypher_in;
 
-int main() {
-    const char *uri = "bolt://localhost:7687";
-    const char *username = "neo4j";
-    const char *password = "password";
+}
 
-    DatabaseConnector connector(uri, username, password);
+int main()
+{
+    bp::opstream cypher_in;
+    bp::child cypher_shell("cypher-shell", bp::std_out > "gcc_out.log", bp::std_in < cypher_in);
 
-    // Use the connector to interact with the database...
-    neo4j_connection_t *conn = connector.get_connection();
-    // execute Cypher queries using neo4j_run
+
+
+
+
+    // cypher_in << "CALL gds.graph.project('myGraph', 'Location', 'ROAD', { relationshipProperties: 'cost' });" << std::endl;
+    // cypher_in.flush();
+    createSwitch(cypher_in, 1);
+    createSwitch(cypher_in, 2);
+    createLink(cypher_in, 1, 2, 10);
+    // std::chrono::high_resolution_clock::time_point start_time, end_time;
+    // start_time = std::chrono::high_resolution_clock::now();
+    // cypher_in << "MATCH (source:Location {name: 'A'})CALL gds.allShortestPaths.dijkstra.stream('myGraph', {    sourceNode: source,    relationshipWeightProperty: 'cost'})YIELD index, path RETURN index, path;" << std::endl;
+    // cypher_in.flush();
+    // end_time = std::chrono::high_resolution_clock::now();
+    // auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(end_time - start_time);
+    // std::cout << "Program duration: " << duration.count() << " nanoseconds\n";
+
+    // cypher_shell.wait();
+    cypher_shell.wait_for(std::chrono::seconds(3));
 
     return 0;
 }
