@@ -5,6 +5,7 @@ name = "pypi"
 
 [packages]
 neo4j = "*"
+graphdatascience = "*"
 
 [dev-packages]
 

@@ -45,8 +45,8 @@ public:
 
         os << "MATCH (from:Switch {dpid: " << dpid_from << "})," << "(to: Switch {dpid: " << dpid_to << "}), p = shortestPath((from)-[:Link*]-(to)) return p;";
 
-        // c.wait_for(std::chrono::milliseconds(200));
-        c.wait();
+        c.wait_for(std::chrono::milliseconds(300));
+    
         auto end = std::chrono::high_resolution_clock::now();
         auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
 
@@ -97,7 +97,7 @@ int main()
     // }
 
     // srand(time(NULL));
-    GDB_Topology tmp;
+    // GDB_Topology tmp;
     // for (int i = 0; i < 1000; ++i) {
     //     tmp.createSwitch(i + 1);
     //     for (int j = 0; j < i / 10; ++j) {
@@ -107,8 +107,8 @@ int main()
 
     // std::cout << "1 and 8" << std::endl;
 
-    std::cout << "14 and 88" << std::endl;
-    tmp.shortestPath(14, 88);
+    // std::cout << "14 and 88" << std::endl;
+    // tmp.shortestPath(14, 88);
 
     // std::cout << "97 and 4" << std::endl;
     // tmp.shortestPath(97, 4);
@@ -123,7 +123,26 @@ int main()
     // auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(end_time - start_time);
     // std::cout << "Program duration: " << duration.count() << " nanoseconds\n";
 
-    // cypher_shell.wait();
+
+    bp::ipstream os;
+
+    std::string s1;
+    std::string s2;
+    std::cin >> s1 >> s2;
+    std::string program = "python3 my_neo4j.py " + s1 + " " + s2;
+    std::chrono::high_resolution_clock::time_point start_time, end_time;
+    start_time = std::chrono::high_resolution_clock::now();
+    bp::child shortestPath(program);
+
+    shortestPath.wait();
+    end_time = std::chrono::high_resolution_clock::now();
+    auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end_time - start_time);
+    std::cout << "Program duration: " << duration.count() << " microseconds\n";
+
+
+
+
+
 
     return 0;
 }
