@@ -5,8 +5,7 @@ class App(ConanFile):
     name = "App"
     version = "0.1"
     settings = None
-    description = "App"
-    requires = "None"
+    description = "Topology execution time"
     url = "None"
     license = "None"
     author = "None"
