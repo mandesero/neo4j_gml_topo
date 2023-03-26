@@ -11,6 +11,7 @@ namespace runos {
     }
     
     void App::handle_signal()  {
+        LOG(INFO) << "::: ComputePath by App :::";
         auto route_id = topo->newRoute(0, 2);
     }
 
