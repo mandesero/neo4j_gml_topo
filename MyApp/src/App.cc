@@ -1,10 +1,13 @@
 #include "App.hpp"
-
+#include <runos/core/logging.hpp>
 
 namespace runos {
 
+    REGISTER_APPLICATION(App, {"topology", ""})
+
     void App::init(Loader *, const Config& ) {
-        connect(topo, &Topology::ready, this, &MyApp::handle_signal);
+        LOG(INFO) << "::: App initialization :::";
+        connect(topo, &Topology::ready, this, &App::handle_signal);
     }
     
     void App::handle_signal()  {
