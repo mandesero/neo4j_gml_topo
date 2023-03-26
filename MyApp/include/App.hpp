@@ -13,7 +13,8 @@ namespace runos {
     public:
         Topology *topo;
         void init(Loader* loader, const Config& config) override;
-
+        void startUp(Loader* loader);
+        
     public slots:
         void handle_signal();
     };
