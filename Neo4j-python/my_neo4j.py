@@ -2,6 +2,7 @@
 
 from neo4j import GraphDatabase
 import sys
+from config import NEO4J_URI
 
 
 import time
