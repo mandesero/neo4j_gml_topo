@@ -2,7 +2,7 @@
 
 from neo4j import GraphDatabase
 import sys
-from config import NEO4J_URI
+from config import NEO4J_URI, USER, PASSWORD
 
 
 import time
@@ -14,8 +14,6 @@ def timer(func):
         return (time.time() - t0) * 1000, res
     return wrapped
 
-
-NEO4J_URI = "neo4j://localhost:7687"
 
 def is_graph_project_exist(tx, name):
     query = f'''
@@ -40,12 +38,12 @@ def update_graph_project(tx, name="myGraph", update=False):
     if update:
         tx.run(query_1)
         tx.run(query_2)
+        print("update graph")
     else:
         tx.run(query_2)
 
 @timer
 def shortestPath(tx, dpid_from, dpid_to, update=True):
-
     if update:
         update_graph_project(tx, update=update)
     query = f'''
@@ -60,19 +58,30 @@ def shortestPath(tx, dpid_from, dpid_to, update=True):
     '''
     result = tx.run(query)
     records = list(result)
-    total_cost, path = records[0]
+    try:
+        total_cost, path = records[0]
+    except:
+        total_cost, path = None, None
     summary = result.consume()
-    print("The query returned in {time} ms.".format(
-        time=summary.result_available_after,
-    ))
-    return total_cost, path
+    return total_cost, path, summary.result_available_after
 
+from parsgml import GmlManager
+from topology_creator import Neo4j_Manager
 
 if __name__ == "__main__":
-    with GraphDatabase.driver(NEO4J_URI) as driver:
-        dpid_from, dpid_to = list(map(int, sys.argv[1:]))
-        with driver.session(database="neo4j") as session:
-            path = session.execute_read(shortestPath, dpid_from=dpid_from, dpid_to=dpid_to, update=False)
+    with GraphDatabase.driver(NEO4J_URI, auth=(USER, PASSWORD)) as driver:
+        dpid_from, dpid_to = 1, 88
+        manager = Neo4j_Manager(0)
         with open("gcc_out.log", "w") as file:
-            file.write(str(path))
-        
+            with driver.session(database="neo4j") as session:
+                path = session.execute_read(shortestPath, dpid_from=dpid_from, dpid_to=dpid_to, update=True)
+                print(str(path), file=file)
+
+                unlks = list(map(int, open("unlinks.txt", "r").readline().split(',')))
+                topo = manager.topo
+                for i in unlks:
+                    edge = topo.edges[i]
+                    manager.delete_link(edge.source + 1, edge.target + 1)
+                    print("delete_link ", edge.source + 1, edge.target + 1)
+                    path = session.execute_read(shortestPath, dpid_from=dpid_from, dpid_to=dpid_to, update=True)
+                    print(str(path), file=file)

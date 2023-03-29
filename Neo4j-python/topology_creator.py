@@ -9,7 +9,9 @@ class Neo4j_Manager:
     def __init__(self, n_topo):
         self.driver = GraphDatabase.driver(NEO4J_URI, auth=(USER, PASSWORD))
         self.topo = Neo4j_Manager.get_topology(n_topo)
-        self.topo.random_edges_weights()
+        self.delete_topo()
+        self.create_topo()
+        # self.topo.random_edges_weights()
         
     def create_topo(self):
         query = "CREATE"
@@ -17,7 +19,8 @@ class Neo4j_Manager:
             query += f"(S{dpid + 1}:Switch {{dpid: {dpid + 1}}}),"
         
         for link in self.topo.edges:
-            mb = self.topo.matrix[link.source][link.target]
+            # mb = self.topo.matrix[link.source][link.target]
+            mb = 1
             query += f"(S{link.source + 1})-[:Link {{mb: {mb}}}]->(S{link.target + 1}),"
             query += f"(S{link.source + 1})<-[:Link {{mb: {mb}}}]-(S{link.target + 1}),"
 
