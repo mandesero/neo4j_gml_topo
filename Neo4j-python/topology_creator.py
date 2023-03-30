@@ -11,8 +11,22 @@ class Neo4j_Manager:
         self.topo = Neo4j_Manager.get_topology(n_topo)
         self.delete_topo()
         self.create_topo()
+        self.create_graph_proection()
         # self.topo.random_edges_weights()
         
+    def create_graph_proection(self):
+        query = f'''CALL gds.graph.project(
+            'myGraph',
+            'Switch',
+            'Link',
+            {{
+                relationshipProperties: 'mb'
+            }}
+        )
+        '''
+        with self.driver.session() as session:
+            result = session.run(query)
+    
     def create_topo(self):
         query = "CREATE"
         for dpid in self.topo.nodes:

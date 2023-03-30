@@ -67,15 +67,31 @@ def shortestPath(tx, dpid_from, dpid_to, update=True):
 
 from parsgml import GmlManager
 from topology_creator import Neo4j_Manager
+import csv
 
 if __name__ == "__main__":
     with GraphDatabase.driver(NEO4J_URI, auth=(USER, PASSWORD)) as driver:
         dpid_from, dpid_to = 1, 88
-        manager = Neo4j_Manager(0)
-        with open("gcc_out.log", "w") as file:
+        n_topo = 0
+
+        fieldnames = ['execution_time', 'total_cost', 'path', 'query_execution_time']
+
+        manager = Neo4j_Manager(n_topo)
+        with open(f"out_{n_topo}.csv", 'w', encoding='UTF8', newline='') as file:
             with driver.session(database="neo4j") as session:
+
+                writer = csv.DictWriter(file, fieldnames=fieldnames)
+                writer.writeheader()
+                rows = []
                 path = session.execute_read(shortestPath, dpid_from=dpid_from, dpid_to=dpid_to, update=True)
-                print(str(path), file=file)
+                rows.append(
+                    {
+                        'execution_time': path[0],
+                        'total_cost': path[1][0],
+                        'path': path[1][1],
+                        'query_execution_time': path[1][2],
+                    }
+                )
 
                 unlks = list(map(int, open("unlinks.txt", "r").readline().split(',')))
                 topo = manager.topo
@@ -84,4 +100,12 @@ if __name__ == "__main__":
                     manager.delete_link(edge.source + 1, edge.target + 1)
                     print("delete_link ", edge.source + 1, edge.target + 1)
                     path = session.execute_read(shortestPath, dpid_from=dpid_from, dpid_to=dpid_to, update=True)
-                    print(str(path), file=file)
+                    rows.append(
+                    {
+                        'execution_time': path[0],
+                        'total_cost': path[1][0],
+                        'path': path[1][1],
+                        'query_execution_time': path[1][2],
+                    }
+                    )
+                writer.writerows(rows)
