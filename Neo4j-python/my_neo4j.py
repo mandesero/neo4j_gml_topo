@@ -7,13 +7,6 @@ from config import NEO4J_URI, USER, PASSWORD
 
 import time
 
-def timer(func):
-    def wrapped(*args, **kwargs):
-        t0 = time.time()
-        res = func(*args, **kwargs)
-        return (time.time() - t0) * 1000, res
-    return wrapped
-
 
 def is_graph_project_exist(tx, name):
     query = f'''
@@ -38,14 +31,14 @@ def update_graph_project(tx, name="myGraph", update=False):
     if update:
         tx.run(query_1)
         tx.run(query_2)
-        print("update graph")
+        # print("update graph")
     else:
         tx.run(query_2)
 
-@timer
+# @timer
 def shortestPath(tx, dpid_from, dpid_to, update=True):
-    if update:
-        update_graph_project(tx, update=update)
+    # if update:
+    #     update_graph_project(tx, update=update)
     query = f'''
     MATCH (source:Switch {{dpid: {dpid_from}}}), (target:Switch {{dpid: {dpid_to}}})
     CALL gds.shortestPath.dijkstra.stream('myGraph', {{
@@ -56,14 +49,29 @@ def shortestPath(tx, dpid_from, dpid_to, update=True):
     YIELD totalCost, nodeIds
     RETURN totalCost, nodeIds
     '''
+    query_1 = f'''CALL gds.graph.drop('myGraph')'''
+
+    query_2 = f'''CALL gds.graph.project(
+        'myGraph',
+        'Switch',
+        'Link',
+        {{
+            relationshipProperties: 'mb'
+        }}
+    )
+    '''
+    tx.run(query_1)
+    tx.run(query_2)
+    t0 = time.time()
     result = tx.run(query)
+    t1 = (time.time() - t0) * 10**6
     records = list(result)
     try:
         total_cost, path = records[0]
     except:
         total_cost, path = None, None
     summary = result.consume()
-    return total_cost, path, summary.result_available_after
+    return t1, total_cost, path, summary.result_available_after
 
 from parsgml import GmlManager
 from topology_creator import Neo4j_Manager
@@ -71,8 +79,8 @@ import csv
 
 if __name__ == "__main__":
     with GraphDatabase.driver(NEO4J_URI, auth=(USER, PASSWORD)) as driver:
-        dpid_from, dpid_to = 1, 88
-        n_topo = 0
+        dpid_from, dpid_to = 1, 15
+        n_topo = 34
 
         fieldnames = ['execution_time', 'total_cost', 'path', 'query_execution_time']
 
@@ -87,13 +95,13 @@ if __name__ == "__main__":
                 rows.append(
                     {
                         'execution_time': path[0],
-                        'total_cost': path[1][0],
-                        'path': path[1][1],
-                        'query_execution_time': path[1][2],
+                        'total_cost': path[1],
+                        'path': path[2],
+                        'query_execution_time': path[3],
                     }
                 )
 
-                unlks = list(map(int, open("unlinks.txt", "r").readline().split(',')))
+                unlks = list(map(int, open("unlinks.txt", "r").readlines()[n_topo].split(',')))
                 topo = manager.topo
                 for i in unlks:
                     edge = topo.edges[i]
@@ -103,9 +111,9 @@ if __name__ == "__main__":
                     rows.append(
                     {
                         'execution_time': path[0],
-                        'total_cost': path[1][0],
-                        'path': path[1][1],
-                        'query_execution_time': path[1][2],
+                        'total_cost': path[1],
+                        'path': path[2],
+                        'query_execution_time': path[3],
                     }
                     )
                 writer.writerows(rows)
