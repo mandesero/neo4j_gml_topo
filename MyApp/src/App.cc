@@ -2,6 +2,7 @@
 #include <runos/core/logging.hpp>
 #include "SwitchManager.hpp"
 
+#include <fstream>
 #include <chrono>
 
 
@@ -30,6 +31,10 @@ namespace runos {
     }
 
     void App::handle_signal()  {
+
+        std::fstream out;
+        out.open("out.txt", std::ios::app);
+
         LOG(INFO) << "::: ComputePath by App :::";
         
         std::chrono::high_resolution_clock::time_point start_time, end_time;
@@ -38,8 +43,11 @@ namespace runos {
         auto route_id = topo->newRoute(1, 2);
 
         end_time = std::chrono::high_resolution_clock::now();
-        auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(end_time - start_time);
-        LOG(INFO) << "Find shortestPath time: " << duration.count() << " nanoseconds";
+        auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end_time - start_time);
+        LOG(INFO) << "Find shortestPath time: " << duration.count() << " microseconds";
+
+        out << duration.count() << "\n";
+        out.close()
     }
 
 } // namespace runos
