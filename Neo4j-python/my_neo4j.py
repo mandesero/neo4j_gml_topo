@@ -79,8 +79,8 @@ import csv
 
 if __name__ == "__main__":
     with GraphDatabase.driver(NEO4J_URI, auth=(USER, PASSWORD)) as driver:
-        dpid_from, dpid_to = 1, 15
-        n_topo = 34
+        dpid_from, dpid_to = 1, 111
+        n_topo = 1
 
         fieldnames = ['execution_time', 'total_cost', 'path', 'query_execution_time']
 

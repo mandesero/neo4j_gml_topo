@@ -64,6 +64,7 @@ class GmlManager:
 
 # a = GmlManager()
 # a.parse()
+# a.log_to_file()
 # with open("unlinks.txt", "w") as file:
 #     for topo in a.topologies:
 #         n = len(topo.edges)

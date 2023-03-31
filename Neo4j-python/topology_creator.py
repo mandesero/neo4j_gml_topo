@@ -61,3 +61,4 @@ class Neo4j_Manager:
         manager = GmlManager()
         manager.parse()
         return manager.topologies[n_topo]
+    
