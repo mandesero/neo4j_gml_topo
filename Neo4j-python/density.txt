@@ -1,6 +1,7 @@
 PATH=GML_files/1000.2000.gml, nodes=1000, density=0.004
-PATH=GML_files/480.960.gml, nodes=480, density=0.008333333333333333
-PATH=GML_files/500.1500.gml, nodes=500, density=0.012
+PATH=GML_files/watts_strogatz_graph_500.gml, nodes=500, density=0.004
+PATH=GML_files/erdos_renyi_graph_500.gml, nodes=500, density=0.009952
+PATH=GML_files/barabasi_albert_graph_500.gml, nodes=500, density=0.011928
 PATH=GML_files/Colt.gml, nodes=153, density=0.01631850997479602
 PATH=GML_files/Interoute.gml, nodes=110, density=0.026115702479338844
 PATH=GML_files/Forthnet.gml, nodes=62, density=0.03225806451612903

@@ -62,11 +62,12 @@ class GmlManager:
         return res
 
 
-# a = GmlManager()
-# a.parse()
-# a.log_to_file()
-# with open("unlinks.txt", "w") as file:
-#     for topo in a.topologies:
-#         n = len(topo.edges)
-#         t = sample(list(map(str, range(n))), n // 2 + 1)
-#         print(",".join(t), file=file)    
+if __name__ == "__main__":
+    a = GmlManager()
+    a.parse()
+    a.log_to_file()
+    with open("unlinks.txt", "w") as file:
+        for topo in a.topologies:
+            n = len(topo.edges)
+            t = sample(list(map(str, range(n))), n // 2 + 1)
+            print(",".join(t), file=file)
